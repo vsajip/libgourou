@@ -963,13 +963,13 @@ namespace gourou
 
     /**
      * RSA Key can be over encrypted with AES128-CBC if keyType attribute is set
-     * For EPUB, Key = SHA256(keyType)[14:22] || SHA256(keyType)[7:13]
-     * For PDF,  Key = SHA256(keyType)[6:19]  || SHA256(keyType)[3:6]
+     * remainder = keyType % 16
+     * Key = SHA256(keyType)[remainder*2:remainder*2+(16-remainder)] || SHA256(keyType)[16-remainder:16]
      * IV = DeviceID ^ FulfillmentId ^ VoucherId
      *
      * @return Base64 encoded decrypted key
      */
-    std::string DRMProcessor::encryptedKeyFirstPass(pugi::xml_document& rightsDoc, const std::string& encryptedKey, const std::string& keyType, ITEM_TYPE type)
+    std::string DRMProcessor::encryptedKeyFirstPass(pugi::xml_document& rightsDoc, const std::string& encryptedKey, const std::string& keyType)
     {
 	unsigned char digest[32], key[16], iv[16];
 	unsigned int dataOutLength;
@@ -979,18 +979,12 @@ namespace gourou
 
 	dumpBuffer(gourou::LG_LOG_DEBUG, "SHA of KeyType : ", digest, sizeof(digest));
 
-	switch(type)
-	{
-	case EPUB:
-	    memcpy(key, &digest[14], 9);
-	    memcpy(&key[9], &digest[7], 7);
-	    break;
-	case PDF:
-	    memcpy(key, &digest[6], 13);
-	    memcpy(&key[13], &digest[3], 3);
-	    break;
-	}
+	long nonce = std::stol(keyType);
+	int remainder = nonce % 16;
 
+	memcpy(key, &digest[remainder*2], 16-remainder);
+	memcpy(&key[16-remainder], &digest[remainder], remainder);
+	
 	id = extractTextElem(rightsDoc, "/adept:rights/licenseToken/device");
 	if (id == "")
 	    EXCEPTION(DRM_ERR_ENCRYPTION_KEY_FP, "Device id not found in rights.xml");
@@ -1021,7 +1015,7 @@ namespace gourou
 	dumpBuffer(gourou::LG_LOG_DEBUG, "First pass IV  : ", iv, sizeof(iv));
 
 	unsigned char* clearRSAKey = new unsigned char[arrayEncryptedKey.size()];
-	
+
 	client->decrypt(CryptoInterface::ALGO_AES, CryptoInterface::CHAIN_CBC,
 			(const unsigned char*)key, (unsigned int)sizeof(key),
 			(const unsigned char*)iv, (unsigned int)sizeof(iv),
@@ -1067,7 +1061,7 @@ namespace gourou
 	    std::string keyType = extractTextAttribute(rightsDoc, "/adept:rights/licenseToken/encryptedKey", "keyType", false);
 
 	    if (keyType != "")
-		encryptedKey = encryptedKeyFirstPass(rightsDoc, encryptedKey, keyType, EPUB);
+		encryptedKey = encryptedKeyFirstPass(rightsDoc, encryptedKey, keyType);
 	    
 	    decryptADEPTKey(encryptedKey, decryptedKey);
 
@@ -1262,7 +1256,7 @@ namespace gourou
 		    std::string keyType = extractTextAttribute(rightsDoc, "/adept:rights/licenseToken/encryptedKey", "keyType", false);
 
 		    if (keyType != "")
-			encryptedKey = encryptedKeyFirstPass(rightsDoc, encryptedKey, keyType, PDF);
+			encryptedKey = encryptedKeyFirstPass(rightsDoc, encryptedKey, keyType);
 		    
 		    decryptADEPTKey(encryptedKey, decryptedKey);
 
