@@ -232,7 +232,7 @@ namespace gourou
 	void fetchLicenseServiceCertificate(const std::string& licenseURL,
 					    const std::string& operatorURL);
 	std::string encryptedKeyFirstPass(pugi::xml_document& rightsDoc, const std::string& encryptedKey, const std::string& keyType);
-	void decryptADEPTKey(const std::string& encryptedKey, unsigned char* decryptedKey);
+	void decryptADEPTKey(pugi::xml_document& rightsDoc, unsigned char* decryptedKey, const unsigned char* encryptionKey=0, unsigned encryptionKeySize=0);
 	void removeEPubDRM(const std::string& filenameIn, const std::string& filenameOut, const unsigned char* encryptionKey, unsigned encryptionKeySize);
 	void generatePDFObjectKey(int version,
 				  const unsigned char* masterKey, unsigned int masterKeyLength,

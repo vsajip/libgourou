@@ -944,23 +944,6 @@ namespace gourou
     int DRMProcessor::getLogLevel() {return (int)gourou::logLevel;}
     void DRMProcessor::setLogLevel(int logLevel) {gourou::logLevel = (GOUROU_LOG_LEVEL)logLevel;}
 
-    void DRMProcessor::decryptADEPTKey(const std::string& encryptedKey, unsigned char* decryptedKey)
-    {	
-	if (encryptedKey.size() != 172)
-	    EXCEPTION(DRM_INVALID_KEY_SIZE, "Invalid encrypted key size (" << encryptedKey.size() << "). DRM version not supported");
-
-	ByteArray arrayEncryptedKey = ByteArray::fromBase64(encryptedKey);
-
-	std::string privateKeyData = user->getPrivateLicenseKey();
-	ByteArray privateRSAKey = ByteArray::fromBase64(privateKeyData);
-	
-	dumpBuffer(gourou::LG_LOG_DEBUG, "To decrypt : ", arrayEncryptedKey.data(), arrayEncryptedKey.length());
-
-	client->RSAPrivateDecrypt(privateRSAKey.data(), privateRSAKey.length(),
-				  RSAInterface::RSA_KEY_PKCS8, "",
-				  arrayEncryptedKey.data(), arrayEncryptedKey.length(), decryptedKey);
-    }
-
     /**
      * RSA Key can be over encrypted with AES128-CBC if keyType attribute is set
      * remainder = keyType % 16
@@ -1009,11 +992,10 @@ namespace gourou
 	for(unsigned int i=0; i<sizeof(iv); i++)
 	    iv[i] = _deviceId[i] ^ _fulfillmentId[i] ^ _voucherId[i];
 
-	ByteArray arrayEncryptedKey = ByteArray::fromBase64(encryptedKey);
-		
 	dumpBuffer(gourou::LG_LOG_DEBUG, "First pass key : ", key, sizeof(key));
 	dumpBuffer(gourou::LG_LOG_DEBUG, "First pass IV  : ", iv, sizeof(iv));
 
+	ByteArray arrayEncryptedKey = ByteArray::fromBase64(encryptedKey);
 	unsigned char* clearRSAKey = new unsigned char[arrayEncryptedKey.size()];
 
 	client->decrypt(CryptoInterface::ALGO_AES, CryptoInterface::CHAIN_CBC,
@@ -1041,7 +1023,51 @@ namespace gourou
 
 	return res.toBase64();
     }
-    
+
+    void DRMProcessor::decryptADEPTKey(pugi::xml_document& rightsDoc, unsigned char* decryptedKey, const unsigned char* encryptionKey, unsigned encryptionKeySize)
+    {
+	unsigned char rsaKey[RSA_KEY_SIZE];
+	
+	if (!encryptionKey)
+	{
+	    std::string encryptedKey = extractTextElem(rightsDoc, "/adept:rights/licenseToken/encryptedKey");
+	    std::string keyType = extractTextAttribute(rightsDoc, "/adept:rights/licenseToken/encryptedKey", "keyType", false);
+
+	    if (keyType != "")
+		encryptedKey = encryptedKeyFirstPass(rightsDoc, encryptedKey, keyType);
+	    
+	    if (encryptedKey.size() != 172)
+		EXCEPTION(DRM_INVALID_KEY_SIZE, "Invalid encrypted key size (" << encryptedKey.size() << "). DRM version not supported");
+
+	    ByteArray arrayEncryptedKey = ByteArray::fromBase64(encryptedKey);
+
+	    std::string privateKeyData = user->getPrivateLicenseKey();
+	    ByteArray privateRSAKey = ByteArray::fromBase64(privateKeyData);
+	
+	    dumpBuffer(gourou::LG_LOG_DEBUG, "To decrypt : ", arrayEncryptedKey.data(), arrayEncryptedKey.length());
+
+	    client->RSAPrivateDecrypt(privateRSAKey.data(), privateRSAKey.length(),
+				      RSAInterface::RSA_KEY_PKCS8, "",
+				      arrayEncryptedKey.data(), arrayEncryptedKey.length(), rsaKey);
+
+	    dumpBuffer(gourou::LG_LOG_DEBUG, "Decrypted : ", rsaKey, sizeof(rsaKey));
+
+	    if (rsaKey[0] != 0x00 || rsaKey[1] != 0x02 ||
+		rsaKey[RSA_KEY_SIZE-16-1] != 0x00)
+		EXCEPTION(DRM_ERR_ENCRYPTION_KEY, "Unable to retrieve encryption key");
+
+	    memcpy(decryptedKey, &rsaKey[sizeof(rsaKey)-16], 16);
+	}
+	else
+	{
+	    GOUROU_LOG(DEBUG, "Use provided encryption key");
+	    if (encryptionKeySize != 16)
+		EXCEPTION(DRM_ERR_ENCRYPTION_KEY, "Provided encryption key must be 16 bytes");
+
+	    memcpy(decryptedKey, encryptionKey, encryptionKeySize);
+	}
+    }
+   
     void DRMProcessor::removeEPubDRM(const std::string& filenameIn, const std::string& filenameOut,
 				     const unsigned char* encryptionKey, unsigned encryptionKeySize)
     {
@@ -1053,32 +1079,9 @@ namespace gourou
 	pugi::xml_document rightsDoc;
 	rightsDoc.load_string((const char*)zipData.data());
 
-	std::string encryptedKey = extractTextElem(rightsDoc, "/adept:rights/licenseToken/encryptedKey");
-	unsigned char decryptedKey[RSA_KEY_SIZE];
+	unsigned char decryptedKey[16];
 
-	if (!encryptionKey)
-	{
-	    std::string keyType = extractTextAttribute(rightsDoc, "/adept:rights/licenseToken/encryptedKey", "keyType", false);
-
-	    if (keyType != "")
-		encryptedKey = encryptedKeyFirstPass(rightsDoc, encryptedKey, keyType);
-	    
-	    decryptADEPTKey(encryptedKey, decryptedKey);
-
-	    dumpBuffer(gourou::LG_LOG_DEBUG, "Decrypted : ", decryptedKey, RSA_KEY_SIZE);
-
-	    if (decryptedKey[0] != 0x00 || decryptedKey[1] != 0x02 ||
-		decryptedKey[RSA_KEY_SIZE-16-1] != 0x00)
-		EXCEPTION(DRM_ERR_ENCRYPTION_KEY, "Unable to retrieve encryption key");
-	}
-	else
-	{
-	    GOUROU_LOG(DEBUG, "Use provided encryption key");
-	    if (encryptionKeySize != 16)
-		EXCEPTION(DRM_ERR_ENCRYPTION_KEY, "Provided encryption key must be 16 bytes");
-
-	    memcpy(&decryptedKey[sizeof(decryptedKey)-16], encryptionKey, encryptionKeySize);
-	}
+	decryptADEPTKey(rightsDoc, decryptedKey, encryptionKey, encryptionKeySize);
 	
 	client->zipReadFile(zipHandler, "META-INF/encryption.xml", zipData);
 	pugi::xml_document encryptionDoc;
@@ -1117,7 +1120,7 @@ namespace gourou
 		unsigned int dataOutLength;
 
 		client->decrypt(CryptoInterface::ALGO_AES, CryptoInterface::CHAIN_CBC,
-				decryptedKey+sizeof(decryptedKey)-16, 16, /* Key */
+				decryptedKey, sizeof(decryptedKey), /* Key */
 				_data, 16, /* IV */
 				&_data[16], zipData.length()-16,
 				_clearData, &dataOutLength);
@@ -1210,7 +1213,7 @@ namespace gourou
 	std::vector<uPDFParser::Object*> objects = parser.objects();
 	std::vector<uPDFParser::Object*>::iterator it;
 	std::vector<uPDFParser::Object*>::reverse_iterator rIt;
-	unsigned char decryptedKey[RSA_KEY_SIZE];
+	unsigned char decryptedKey[16];
 	int ebxId;
 	
 	for(rIt = objects.rbegin(); rIt != objects.rend(); rIt++)
@@ -1249,31 +1252,7 @@ namespace gourou
 		pugi::xml_document rightsDoc;
 		rightsDoc.load_string((const char*)rightsStr.data());
 
-		std::string encryptedKey = extractTextElem(rightsDoc, "/adept:rights/licenseToken/encryptedKey");
-
-		if (!encryptionKey)
-		{
-		    std::string keyType = extractTextAttribute(rightsDoc, "/adept:rights/licenseToken/encryptedKey", "keyType", false);
-
-		    if (keyType != "")
-			encryptedKey = encryptedKeyFirstPass(rightsDoc, encryptedKey, keyType);
-		    
-		    decryptADEPTKey(encryptedKey, decryptedKey);
-
-		    dumpBuffer(gourou::LG_LOG_DEBUG, "Decrypted : ", decryptedKey, RSA_KEY_SIZE);
-
-		    if (decryptedKey[0] != 0x00 || decryptedKey[1] != 0x02 ||
-			decryptedKey[RSA_KEY_SIZE-16-1] != 0x00)
-			EXCEPTION(DRM_ERR_ENCRYPTION_KEY, "Unable to retrieve encryption key");
-		}
-		else
-		{
-		    GOUROU_LOG(DEBUG, "Use provided encryption key");
-		    if (encryptionKeySize != 16)
-			EXCEPTION(DRM_ERR_ENCRYPTION_KEY, "Provided encryption key must be 16 bytes");
-
-		    memcpy(&decryptedKey[sizeof(decryptedKey)-16], encryptionKey, encryptionKeySize);
-		}
+		decryptADEPTKey(rightsDoc, decryptedKey, encryptionKey, encryptionKeySize);
 		
 		ebxId = ebx->objectId();
 
@@ -1305,10 +1284,10 @@ namespace gourou
 	    
 	    GOUROU_LOG(DEBUG, "Obj " << object->objectId());
 
-	    unsigned char tmpKey[16];
+	    unsigned char tmpKey[sizeof(decryptedKey)];
 
 	    generatePDFObjectKey(ebxVersion->value(),
-				 decryptedKey+sizeof(decryptedKey)-16, 16,
+				 decryptedKey, sizeof(decryptedKey),
 				 object->objectId(), object->generationNumber(),
 				 tmpKey);
 
