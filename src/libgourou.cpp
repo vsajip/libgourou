@@ -1028,6 +1028,13 @@ namespace gourou
     {
 	unsigned char rsaKey[RSA_KEY_SIZE];
 	
+	std::string user = extractTextElem(rightsDoc, "/adept:rights/licenseToken/user");
+
+	if (this->user->getUUID() != user)
+	{
+	    EXCEPTION(DRM_INVALID_USER, "This book has been downloaded for another user (" << user << ")");
+	}
+	
 	if (!encryptionKey)
 	{
 	    std::string encryptedKey = extractTextElem(rightsDoc, "/adept:rights/licenseToken/encryptedKey");
@@ -1041,7 +1048,7 @@ namespace gourou
 
 	    ByteArray arrayEncryptedKey = ByteArray::fromBase64(encryptedKey);
 
-	    std::string privateKeyData = user->getPrivateLicenseKey();
+	    std::string privateKeyData = this->user->getPrivateLicenseKey();
 	    ByteArray privateRSAKey = ByteArray::fromBase64(privateKeyData);
 	
 	    dumpBuffer(gourou::LG_LOG_DEBUG, "To decrypt : ", arrayEncryptedKey.data(), arrayEncryptedKey.length());
