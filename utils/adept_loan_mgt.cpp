@@ -45,7 +45,7 @@
 
 #define MAX_SIZE_BOOK_NAME   30
 
-static       char* activationDir  = 0;
+static       char* adeptDir       = 0;
 static const char* deviceFile     = "device.xml";
 static const char* activationFile = "activation.xml";
 static const char* devicekeyFile  = "devicesalt";
@@ -106,7 +106,7 @@ private:
 	struct Loan* loan;
 	char * res;
 	
-	std::string loanDir = std::string(activationDir) + std::string("/") + LOANS_DIR;
+	std::string loanDir = std::string(adeptDir) + std::string("/") + LOANS_DIR;
 
 	if (!fileExists(loanDir.c_str()))
 	    return;
@@ -336,18 +336,18 @@ static void usage(const char* cmd)
 {
     std::cout << "Manage loaned books" << std::endl;
     
-    std::cout << "Usage: " << basename((char*)cmd) << " [(-d|--activation-dir) dir] (-l|--list)|(-D|--delete loanID)|(-R|--delete loanID) [(-v|--verbose)] [(-h|--help)]" << std::endl << std::endl;
+    std::cout << "Usage: " << basename((char*)cmd) << " [(-D|--adept-directory) dir] (-l|--list)|(-d|--delete loanID)|(-R|--return loanID) [(-v|--verbose)] [(-h|--help)]" << std::endl << std::endl;
     
-    std::cout << "  " << "-d|--activation-dir"  << "\t"   << "Directory of device.xml/activation.xml and device key" << std::endl;
+    std::cout << "  " << "-D|--adept-directory" << "\t"   << ".adept directory that must contains device.xml, activation.xml and devicesalt" << std::endl;
     std::cout << "  " << "-l|--list"            << "\t\t" << "List all loaned books" << std::endl;
     std::cout << "  " << "-r|--return"          << "\t\t" << "Return a loaned book" << std::endl;
-    std::cout << "  " << "-D|--delete"          << "\t\t" << "Delete a loan entry without returning it" << std::endl;
+    std::cout << "  " << "-d|--delete"          << "\t\t" << "Delete a loan entry without returning it" << std::endl;
     std::cout << "  " << "-v|--verbose"         << "\t\t" << "Increase verbosity, can be set multiple times" << std::endl;
     std::cout << "  " << "-V|--version"         << "\t\t" << "Display libgourou version" << std::endl;
     std::cout << "  " << "-h|--help"            << "\t\t" << "This help" << std::endl;
 
     std::cout << std::endl;
-    std::cout << "Activation directory is optional. If not set, it's looked into :" << std::endl;
+    std::cout << "ADEPT directory is optional. If not set, it's looked into :" << std::endl;
     std::cout << "  * Current directory" << std::endl;
     std::cout << "  * .adept" << std::endl;
     std::cout << "  * adobe-digital-editions directory" << std::endl;
@@ -365,10 +365,10 @@ int main(int argc, char** argv)
     while (1) {
 	int option_index = 0;
 	static struct option long_options[] = {
-	    {"activation-dir",   required_argument, 0,  'd' },
+	    {"adept-directory",  required_argument, 0,  'D' },
 	    {"list",             no_argument,       0,  'l' },
 	    {"return",           no_argument,       0,  'r' },
-	    {"delete",           no_argument,       0,  'D' },
+	    {"delete",           no_argument,       0,  'd' },
 	    {"verbose",          no_argument,       0,  'v' },
 	    {"version",          no_argument,       0,  'V' },
 	    {"help",             no_argument,       0,  'h' },
@@ -381,8 +381,8 @@ int main(int argc, char** argv)
 	    break;
 
 	switch (c) {
-	case 'd':
-	    activationDir = optarg;
+	case 'D':
+	    adeptDir = optarg;
 	    break;
 	case 'l':
 	    list = true;
@@ -392,7 +392,7 @@ int main(int argc, char** argv)
 	    returnID = optarg;
 	    actions++;
 	    break;
-	case 'D':
+	case 'd':
 	    deleteID = optarg;
 	    actions++;
 	    break;
@@ -432,9 +432,9 @@ int main(int argc, char** argv)
     {
 	orig = *files[i];
 	
-	if (activationDir)
+	if (adeptDir)
 	{
-	    std::string path = std::string(activationDir) + std::string("/") + orig;
+	    std::string path = std::string(adeptDir) + std::string("/") + orig;
 	    filename = strdup(path.c_str());
 	}
 	else
@@ -450,17 +450,17 @@ int main(int argc, char** argv)
 
     if (hasErrors)
     {
-	// In case of activation dir was provided by user
-	activationDir = 0;
+	// In case of adept dir was provided by user
+	adeptDir = 0;
 	goto end;
     }
 
-    if (activationDir)
-	activationDir = strdup(activationDir); // For below free
+    if (adeptDir)
+	adeptDir = strdup(adeptDir); // For below free
     else
     {
-	activationDir = strdup(deviceFile);
-	activationDir = dirname(activationDir);
+	adeptDir = strdup(deviceFile);
+	adeptDir = dirname(adeptDir);
     }
 
     ret = loanMGT.run();
@@ -472,8 +472,8 @@ end:
 	    free((void*)*files[i]);
     }
 
-    if (activationDir)
-	free(activationDir);
+    if (adeptDir)
+	free(adeptDir);
     
     return ret;
 }

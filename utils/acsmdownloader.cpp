@@ -184,8 +184,9 @@ static void usage(const char* cmd)
 {
     std::cout << "Download EPUB file from ACSM request file" << std::endl;
     
-    std::cout << "Usage: " << basename((char*)cmd) << " [(-d|--device-file) device.xml] [(-a|--activation-file) activation.xml] [(-k|--device-key-file) devicesalt] [(-O|--output-dir) dir] [(-o|--output-file) output(.epub|.pdf|.der)] [(-r|--resume)] [(-v|--verbose)] [(-h|--help)] (-f|--acsm-file) file.acsm|(-e|--export-private-key)" << std::endl << std::endl;
+    std::cout << "Usage: " << basename((char*)cmd) << " [(-D|--adept-directory) dir] [(-d|--device-file) device.xml] [(-a|--activation-file) activation.xml] [(-k|--device-key-file) devicesalt] [(-O|--output-dir) dir] [(-o|--output-file) output(.epub|.pdf|.der)] [(-r|--resume)] [(-v|--verbose)] [(-h|--help)] (-f|--acsm-file) file.acsm|(-e|--export-private-key)" << std::endl << std::endl;
     
+    std::cout << "  " << "-D|--adept-directory" << "\t"   << ".adept directory that must contains device.xml, activation.xml and devicesalt" << std::endl;
     std::cout << "  " << "-d|--device-file"     << "\t"   << "device.xml file from eReader" << std::endl;
     std::cout << "  " << "-a|--activation-file" << "\t"   << "activation.xml file from eReader" << std::endl;
     std::cout << "  " << "-k|--device-key-file" << "\t"   << "private device key file (eg devicesalt/devkey.bin) from eReader" << std::endl;
@@ -209,6 +210,7 @@ static void usage(const char* cmd)
 int main(int argc, char** argv)
 {
     int c, ret = -1;
+    std::string _deviceFile, _activationFile, _devicekeyFile;
 
     const char** files[] = {&devicekeyFile, &deviceFile, &activationFile};
     int verbose = gourou::DRMProcessor::getLogLevel();
@@ -216,6 +218,7 @@ int main(int argc, char** argv)
     while (1) {
 	int option_index = 0;
 	static struct option long_options[] = {
+	    {"adept-directory",  required_argument, 0,  'D' },
 	    {"device-file",      required_argument, 0,  'd' },
 	    {"activation-file",  required_argument, 0,  'a' },
 	    {"device-key-file",  required_argument, 0,  'k' },
@@ -230,12 +233,20 @@ int main(int argc, char** argv)
 	    {0,                  0,                 0,  0 }
 	};
 
-	c = getopt_long(argc, argv, "d:a:k:O:o:f:ervVh",
+	c = getopt_long(argc, argv, "D:d:a:k:O:o:f:ervVh",
                         long_options, &option_index);
 	if (c == -1)
 	    break;
 
 	switch (c) {
+	case 'D':
+	    _deviceFile = std::string(optarg) + "/device.xml";
+	    _activationFile = std::string(optarg) + "/activation.xml";
+	    _devicekeyFile = std::string(optarg) + "/devicesalt";
+	    deviceFile = _deviceFile.c_str();
+	    activationFile = _activationFile.c_str();
+	    devicekeyFile = _devicekeyFile.c_str();
+	    break;
 	case 'd':
 	    deviceFile = optarg;
 	    break;
