@@ -931,14 +931,19 @@ namespace gourou
     void DRMProcessor::exportPrivateLicenseKey(std::string path)
     {
 	int fd = open(path.c_str(), O_CREAT|O_TRUNC|O_WRONLY, S_IRWXU);
+	int ret;
+	
 	if (fd <= 0)
 	    EXCEPTION(GOUROU_FILE_ERROR, "Unable to open " << path);
 
 	ByteArray privateLicenseKey = ByteArray::fromBase64(user->getPrivateLicenseKey());
 	/* In adobekey.py, we get base64 decoded data [26:] */
-	write(fd, privateLicenseKey.data()+26, privateLicenseKey.length()-26);
-	
+	ret = write(fd, privateLicenseKey.data()+26, privateLicenseKey.length()-26);
 	close(fd);
+	if (ret != privateLicenseKey.length()-26)
+	{
+	    EXCEPTION(gourou::GOUROU_FILE_ERROR, "Error writing " << path);
+	}
     }
 
     int DRMProcessor::getLogLevel() {return (int)gourou::logLevel;}

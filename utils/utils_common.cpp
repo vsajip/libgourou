@@ -99,7 +99,7 @@ void mkpath(const char *dir)
 void fileCopy(const char* in, const char* out)
 {
     char buffer[4096];
-    int ret, fdIn, fdOut;
+    int ret, ret2, fdIn, fdOut;
 
     fdIn = open(in, O_RDONLY);
 
@@ -119,7 +119,19 @@ void fileCopy(const char* in, const char* out)
 	ret = ::read(fdIn, buffer, sizeof(buffer));
 	if (ret <= 0)
 	    break;
-	::write(fdOut, buffer, ret);
+	do
+	{
+	    ret2 = ::write(fdOut, buffer, ret);
+	    if (ret2 >= 0)
+	    {
+		ret -= ret2;
+		buffer += ret2;
+	    }
+	    else
+	    {
+		EXCEPTION(gourou::CLIENT_FILE_ERROR, "Error writing " << out);
+	    }
+	} while (ret);
     }
 
     close (fdIn);
