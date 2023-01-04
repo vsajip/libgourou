@@ -209,7 +209,7 @@ private:
     {
 	if (!loanedBooks.size())
 	{
-	    std::cout << "Any book loaned" << std::endl;
+	    std::cout << "No books loaned" << std::endl;
 	    return;
 	}
 
