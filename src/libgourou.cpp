@@ -940,7 +940,7 @@ namespace gourou
 	/* In adobekey.py, we get base64 decoded data [26:] */
 	ret = write(fd, privateLicenseKey.data()+26, privateLicenseKey.length()-26);
 	close(fd);
-	if (ret != privateLicenseKey.length()-26)
+	if (ret != (int)(privateLicenseKey.length()-26))
 	{
 	    EXCEPTION(gourou::GOUROU_FILE_ERROR, "Error writing " << path);
 	}

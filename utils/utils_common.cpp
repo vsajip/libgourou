@@ -98,7 +98,7 @@ void mkpath(const char *dir)
 
 void fileCopy(const char* in, const char* out)
 {
-    char buffer[4096];
+    char buffer[4096], *_buffer;
     int ret, ret2, fdIn, fdOut;
 
     fdIn = open(in, O_RDONLY);
@@ -121,11 +121,12 @@ void fileCopy(const char* in, const char* out)
 	    break;
 	do
 	{
-	    ret2 = ::write(fdOut, buffer, ret);
+	    _buffer = buffer;
+	    ret2 = ::write(fdOut, _buffer, ret);
 	    if (ret2 >= 0)
 	    {
 		ret -= ret2;
-		buffer += ret2;
+		_buffer += ret2;
 	    }
 	    else
 	    {
