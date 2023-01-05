@@ -32,10 +32,6 @@
 #define HOBBES_DEFAULT_VERSION  "10.0.4"
 #endif
 
-#ifndef DEFAULT_ADEPT_DIR
-#define DEFAULT_ADEPT_DIR       "./.adept"
-#endif
-
 #ifndef ACS_SERVER
 #define ACS_SERVER              "http://adeactivate.adobe.com/adept"
 #endif
@@ -107,6 +103,11 @@ namespace gourou
 	 * @param operatorURL     URL of operator that loans this book
 	 */
 	void returnLoan(const std::string& loanID, const std::string& operatorURL);
+
+	/**
+	 * @brief Return default ADEPT directory (ie /home/<user>/.config/adept)
+	 */	 
+	static std::string getDefaultAdeptDir(void);
 	
 	/**
 	 * @brief Create a new ADEPT environment (device.xml, devicesalt and activation.xml).
@@ -118,7 +119,7 @@ namespace gourou
 	 * @param ACSServer       Override main ACS server (default adeactivate.adobe.com)
 	 */
         static DRMProcessor* createDRMProcessor(DRMProcessorClient* client,
-						bool randomSerial=false, const std::string& dirName=std::string(DEFAULT_ADEPT_DIR),
+						bool randomSerial=false, std::string dirName=std::string(""),
 						const std::string& hobbes=std::string(HOBBES_DEFAULT_VERSION),
 						const std::string& ACSServer=ACS_SERVER);
 

@@ -61,6 +61,20 @@ bool fileExists(const char* filename)
 
 const char* findFile(const char* filename, bool inDefaultDirs)
 {
+    std::string path;
+    
+    const char* adeptDir = getenv("ADEPT_DIR");
+    if (adeptDir && adeptDir[0])
+    {
+	path = adeptDir + std::string("/") + filename;
+	if (fileExists(path.c_str()))
+	    return strdup(path.c_str());
+    }
+
+    path = gourou::DRMProcessor::getDefaultAdeptDir() + filename;
+    if (fileExists(path.c_str()))
+	return strdup(path.c_str());
+
     if (fileExists(filename))
 	return strdup(filename);
 
@@ -68,7 +82,7 @@ const char* findFile(const char* filename, bool inDefaultDirs)
     
     for (int i=0; i<(int)ARRAY_SIZE(defaultDirs); i++)
     {
-	std::string path = std::string(defaultDirs[i]) + filename;
+	path = std::string(defaultDirs[i]) + filename;
 	if (fileExists(path.c_str()))
 	    return strdup(path.c_str());
     }

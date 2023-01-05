@@ -348,6 +348,8 @@ static void usage(const char* cmd)
 
     std::cout << std::endl;
     std::cout << "ADEPT directory is optional. If not set, it's looked into :" << std::endl;
+    std::cout << "  * $ADEPT_DIR environment variable" << std::endl;
+    std::cout << "  * /home/<user>/.config/adept" << std::endl;
     std::cout << "  * Current directory" << std::endl;
     std::cout << "  * .adept" << std::endl;
     std::cout << "  * adobe-digital-editions directory" << std::endl;

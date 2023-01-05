@@ -28,6 +28,8 @@
 #include <libgourou_common.h>
 #include <libgourou_log.h>
 
+#define LOCAL_ADEPT_DIR       "./.adept"
+
 #define ASN_NONE        0x00
 #define ASN_NS_TAG      0x01
 #define ASN_CHILD       0x02
@@ -68,11 +70,14 @@ namespace gourou
 	if (user) delete user;
     }
 
-    DRMProcessor* DRMProcessor::createDRMProcessor(DRMProcessorClient* client, bool randomSerial, const std::string& dirName,
+    DRMProcessor* DRMProcessor::createDRMProcessor(DRMProcessorClient* client, bool randomSerial, std::string dirName,
 						   const std::string& hobbes, const std::string& ACSServer)
     {
 	DRMProcessor* processor = new DRMProcessor(client);
 
+	if (dirName == "")
+	    dirName = getDefaultAdeptDir();
+	
 	Device* device = Device::createDevice(processor, dirName, hobbes, randomSerial);
 	processor->device = device;
 
@@ -844,7 +849,23 @@ namespace gourou
 	addNonce(root);
 	signNode(root);
     }
-    
+
+    std::string DRMProcessor::getDefaultAdeptDir(void)
+    {
+#ifndef DEFAULT_ADEPT_DIR
+	const char* user = getenv("USER");
+	
+	if (user && user[0])
+	{
+	    return std::string("/home/") + user + std::string("/.config/adept/");
+	}
+	else
+	    return LOCAL_ADEPT_DIR;
+#else
+	return DEFAULT_ADEPT_DIR "/";
+#endif
+    }
+
     void DRMProcessor::returnLoan(const std::string& loanID, const std::string& operatorURL)
     {
 	pugi::xml_document returnReq;
