@@ -1035,13 +1035,13 @@ namespace gourou
 	
 	std::string user = extractTextElem(rightsDoc, "/adept:rights/licenseToken/user");
 
-	if (this->user->getUUID() != user)
-	{
-	    EXCEPTION(DRM_INVALID_USER, "This book has been downloaded for another user (" << user << ")");
-	}
-	
 	if (!encryptionKey)
 	{
+	    if (this->user->getUUID() != user)
+	    {
+		EXCEPTION(DRM_INVALID_USER, "This book has been downloaded for another user (" << user << ")");
+	    }
+
 	    std::string encryptedKey = extractTextElem(rightsDoc, "/adept:rights/licenseToken/encryptedKey");
 	    std::string keyType = extractTextAttribute(rightsDoc, "/adept:rights/licenseToken/encryptedKey", "keyType", false);
 
