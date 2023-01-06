@@ -505,6 +505,13 @@ namespace gourou
 	if (!acsmDoc.load_file(ACSMFile.c_str(), pugi::parse_ws_pcdata_single|pugi::parse_escapes, pugi::encoding_utf8))
 	    EXCEPTION(FF_INVALID_ACSM_FILE, "Invalid ACSM file " << ACSMFile);
 
+	// Could be an server internal error
+	pugi::xml_node rootNode = acsmDoc.first_child();
+	if (std::string(rootNode.name()) == "error")
+	{
+	    EXCEPTION(FF_SERVER_INTERNAL_ERROR, rootNode.attribute("data").value());
+	}
+
 	GOUROU_LOG(INFO, "Fulfill " << ACSMFile);
 
 	// Build req file
@@ -512,7 +519,7 @@ namespace gourou
 
 	buildFulfillRequest(acsmDoc, fulfillReq);
 	pugi::xpath_node root = fulfillReq.select_node("//adept:fulfill");
-	pugi::xml_node rootNode = root.node();
+	rootNode = root.node();
 
 	// Remove HMAC
 	pugi::xpath_node xpathRes = fulfillReq.select_node("//hmac");
