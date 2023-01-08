@@ -5,7 +5,7 @@ TARGETS=$(TARGET_BINARIES) launcher
 CXXFLAGS=-Wall -fPIC -I$(ROOT)/include -I$(ROOT)/lib/pugixml/src/
 
 STATIC_DEP=
-LDFLAGS += -L$(ROOT) -lcrypto -lzip -lz -lcurl
+LDFLAGS += -L$(ROOT) -lcrypto -lzip -lz -lcurl -lpugixml
 
 ifneq ($(STATIC_UTILS),)
 STATIC_DEP = $(ROOT)/libgourou.a

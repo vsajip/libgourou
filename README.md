@@ -48,6 +48,7 @@ For utils :
   * libcurl
   * OpenSSL
   * libzip
+  * libpugixml
 
 
 Internal libraries are automatically fetched and statically compiled during the first run.

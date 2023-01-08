@@ -7,8 +7,8 @@ endif
 
 UPDFPARSERLIB = ./lib/updfparser/libupdfparser.a
 
-CXXFLAGS += -Wall -fPIC -I./include -I./lib/pugixml/src/ -I./lib/updfparser/include
-LDFLAGS = $(UPDFPARSERLIB)
+CXXFLAGS += -Wall -fPIC -I./include -I./usr/include/pugixml -I./lib/updfparser/include
+LDFLAGS = $(UPDFPARSERLIB) -lpugixml
 
 VERSION     := $(shell cat include/libgourou.h |grep LIBGOUROU_VERSION|cut -d '"' -f2)
 
@@ -48,7 +48,7 @@ TARGETDIR   := bin
 SRCEXT      := cpp
 OBJEXT      := o
 
-SOURCES      = src/libgourou.cpp src/user.cpp src/device.cpp src/fulfillment_item.cpp src/loan_token.cpp src/bytearray.cpp src/pugixml.cpp
+SOURCES      = src/libgourou.cpp src/user.cpp src/device.cpp src/fulfillment_item.cpp src/loan_token.cpp src/bytearray.cpp
 OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 all: version lib obj $(TARGETS)
