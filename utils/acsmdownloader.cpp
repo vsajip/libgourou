@@ -290,6 +290,9 @@ int main(int argc, char** argv)
    
     gourou::DRMProcessor::setLogLevel(verbose);
 
+    if (optind == argc-1)
+	acsmFile = argv[optind];
+
     if ((!acsmFile && !exportPrivateKey) || (outputDir && !outputDir[0]) ||
 	(outputFile && !outputFile[0]))
     {
