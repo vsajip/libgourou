@@ -1,5 +1,6 @@
 
-TARGETS=acsmdownloader adept_activate adept_remove adept_loan_mgt launcher
+TARGET_BINARIES=acsmdownloader adept_activate adept_remove adept_loan_mgt
+TARGETS=$(TARGET_BINARIES) launcher
 
 CXXFLAGS=-Wall -fPIC -I$(ROOT)/include -I$(ROOT)/lib/pugixml/src/
 
@@ -31,6 +32,15 @@ ${COMMON_LIB}: ${COMMON_DEPS} ${STATIC_DEP}
 
 %: %.cpp ${COMMON_LIB}
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+install:
+	install -d $(DESTDIR)$(PREFIX)/bin/
+	install -m 644 $(TARGET_BINARIES) $(DESTDIR)$(PREFIX)/bin/
+
+uninstall:
+	cd $(DESTDIR)$(PREFIX)/bin/
+	rm -f $(TARGET_BINARIES)
+	cd -
 
 clean:
 	rm -f $(TARGETS) $(COMMON_LIB)
