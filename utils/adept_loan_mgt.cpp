@@ -334,11 +334,11 @@ private:
 
 static void usage(const char* cmd)
 {
-    std::cout << "Manage loaned books" << std::endl;
+    std::cout << basename((char*)cmd) << " manage loaned books" << std::endl << std::endl;
     
-    std::cout << "Usage: " << basename((char*)cmd) << " [(-D|--adept-directory) dir] (-l|--list)|(-d|--delete loanID)|(-R|--return loanID) [(-v|--verbose)] [(-h|--help)]" << std::endl << std::endl;
+    std::cout << "Usage: " << basename((char*)cmd) << " [OPTIONS]" << std::endl << std::endl;
     
-    std::cout << "  " << "-D|--adept-directory" << "\t"   << ".adept directory that must contains device.xml, activation.xml and devicesalt" << std::endl;
+    std::cout << "Global Options:" << std::endl;
     std::cout << "  " << "-l|--list"            << "\t\t" << "List all loaned books" << std::endl;
     std::cout << "  " << "-r|--return"          << "\t\t" << "Return a loaned book" << std::endl;
     std::cout << "  " << "-d|--delete"          << "\t\t" << "Delete a loan entry without returning it" << std::endl;
@@ -346,7 +346,11 @@ static void usage(const char* cmd)
     std::cout << "  " << "-V|--version"         << "\t\t" << "Display libgourou version" << std::endl;
     std::cout << "  " << "-h|--help"            << "\t\t" << "This help" << std::endl;
 
+    std::cout << "ADEPT Options:" << std::endl;
+    std::cout << "  " << "-D|--adept-directory" << "\t"   << ".adept directory that must contains device.xml, activation.xml and devicesalt" << std::endl;
     std::cout << std::endl;
+
+    std::cout << "Environment:" << std::endl;
     std::cout << "ADEPT directory is optional. If not set, it's looked into :" << std::endl;
     std::cout << "  * $ADEPT_DIR environment variable" << std::endl;
     std::cout << "  * /home/<user>/.config/adept" << std::endl;

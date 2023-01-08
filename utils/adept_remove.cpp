@@ -141,22 +141,27 @@ public:
 
 static void usage(const char* cmd)
 {
-    std::cout << "Remove ADEPT DRM (from Adobe) of EPUB/PDF file" << std::endl;
+    std::cout << basename((char*)cmd) << " remove ADEPT DRM (from Adobe) of EPUB/PDF file" << std::endl << std::endl;
     
-    std::cout << "Usage: " << basename((char*)cmd) << " [(-D|--adept-directory) dir] [(-d|--device-file) device.xml] [(-a|--activation-file) activation.xml] [(-k|--device-key-file) devicesalt] [(-O|--output-dir) dir] [(-o|--output-file) output(.epub|.pdf|.der)] [(-v|--verbose)] [(-h|--help)] (-f|--input-file) file(.epub|pdf)" << std::endl << std::endl;
+    std::cout << "Usage: " << basename((char*)cmd) << " [OPTIONS] file(.epub|pdf)" << std::endl << std::endl;
     
-    std::cout << "  " << "-D|--adept-directory" << "\t"   << ".adept directory that must contains device.xml, activation.xml and devicesalt" << std::endl;
-    std::cout << "  " << "-d|--device-file"     << "\t"   << "device.xml file from eReader" << std::endl;
-    std::cout << "  " << "-a|--activation-file" << "\t"   << "activation.xml file from eReader" << std::endl;
-    std::cout << "  " << "-k|--device-key-file" << "\t"   << "private device key file (eg devicesalt/devkey.bin) from eReader" << std::endl;
+    std::cout << "Global Options:" << std::endl;
     std::cout << "  " << "-O|--output-dir"      << "\t"   << "Optional output directory were to put result (default ./)" << std::endl;
     std::cout << "  " << "-o|--output-file"     << "\t"   << "Optional output filename (default inplace DRM removal>)" << std::endl;
-    std::cout << "  " << "-f|--input-file"      << "\t"   << "EPUB/PDF file to process" << std::endl;
+    std::cout << "  " << "-f|--input-file"      << "\t"   << "Backward compatibility: EPUB/PDF file to process" << std::endl;
     std::cout << "  " << "-v|--verbose"         << "\t\t" << "Increase verbosity, can be set multiple times" << std::endl;
     std::cout << "  " << "-V|--version"         << "\t\t" << "Display libgourou version" << std::endl;
     std::cout << "  " << "-h|--help"            << "\t\t" << "This help" << std::endl;
 
+    std::cout << "ADEPT Options:" << std::endl;
+    std::cout << "  " << "-D|--adept-directory" << "\t"   << ".adept directory that must contains device.xml, activation.xml and devicesalt" << std::endl;
+    std::cout << "  " << "-d|--device-file"     << "\t"   << "device.xml file from eReader" << std::endl;
+    std::cout << "  " << "-a|--activation-file" << "\t"   << "activation.xml file from eReader" << std::endl;
+    std::cout << "  " << "-k|--device-key-file" << "\t"   << "private device key file (eg devicesalt/devkey.bin) from eReader" << std::endl;
+
     std::cout << std::endl;
+
+    std::cout << "Environment:" << std::endl;
     std::cout << "Device file, activation file and device key file are optionals. If not set, they are looked into :" << std::endl;
     std::cout << "  * $ADEPT_DIR environment variable" << std::endl;
     std::cout << "  * /home/<user>/.config/adept" << std::endl;

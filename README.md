@@ -37,11 +37,10 @@ For libgourou :
 
 _externals_ :
 
-  * None
+  * libpugixml
 
 _internals_ :
 
-  * PugiXML
   * uPDFParser
 
 For utils :
@@ -62,7 +61,7 @@ Compilation
 
 Use _make_ command
 
-    make [CROSS=XXX] [DEBUG=(0*|1)] [STATIC_UTILS=(0*|1)] [BUILD_UTILS=(0|1*)] [BUILD_STATIC=(0*|1)] [BUILD_SHARED=(0|1*)] [all*|clean|ultraclean|build_utils]
+    make [CROSS=XXX] [DEBUG=(0*|1)] [STATIC_UTILS=(0*|1)] [BUILD_UTILS=(0|1*)] [BUILD_STATIC=(0*|1)] [BUILD_SHARED=(0|1*)] [all*|clean|ultraclean|build_utils|install|uninstall]
 
 CROSS can define a cross compiler prefix (ie arm-linux-gnueabihf-)
 
@@ -100,7 +99,7 @@ Then a _/home/<user>/.config/adept_ directory is created with all configuration 
 
 To download an ePub/PDF :
 
-    ./utils/acsmdownloader -f <ACSM_FILE>
+    ./utils/acsmdownloader <ACSM_FILE>
 
 To export your private key (for DeDRM software) :
 
@@ -108,7 +107,7 @@ To export your private key (for DeDRM software) :
 
 To remove ADEPT DRM :
 
-    ./utils/adept_remove -f <encryptedFile>
+    ./utils/adept_remove <encryptedFile>
 
 To list loaned books :
 

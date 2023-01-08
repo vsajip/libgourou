@@ -181,26 +181,29 @@ private:
 
 
 static void usage(const char* cmd)
-{
-    std::cout << "Download EPUB file from ACSM request file" << std::endl;
-    
-    std::cout << "Usage: " << basename((char*)cmd) << " [(-D|--adept-directory) dir] [(-d|--device-file) device.xml] [(-a|--activation-file) activation.xml] [(-k|--device-key-file) devicesalt] [(-O|--output-dir) dir] [(-o|--output-file) output(.epub|.pdf|.der)] [(-r|--resume)] [(-v|--verbose)] [(-h|--help)] (-f|--acsm-file) file.acsm|(-e|--export-private-key)" << std::endl << std::endl;
-    
-    std::cout << "  " << "-D|--adept-directory" << "\t"   << ".adept directory that must contains device.xml, activation.xml and devicesalt" << std::endl;
-    std::cout << "  " << "-d|--device-file"     << "\t"   << "device.xml file from eReader" << std::endl;
-    std::cout << "  " << "-a|--activation-file" << "\t"   << "activation.xml file from eReader" << std::endl;
-    std::cout << "  " << "-k|--device-key-file" << "\t"   << "private device key file (eg devicesalt/devkey.bin) from eReader" << std::endl;
+{   
+    std::cout << basename((char*)cmd) << " download EPUB file from ACSM request file" << std::endl << std::endl;
+    std::cout << "Usage: " << basename((char*)cmd) << " [OPTIONS] file.acsm" << std::endl << std::endl;
+    std::cout << "Global Options:" << std::endl;
     std::cout << "  " << "-O|--output-dir"      << "\t"   << "Optional output directory were to put result (default ./)" << std::endl;
     std::cout << "  " << "-o|--output-file"     << "\t"   << "Optional output filename (default <title.(epub|pdf|der)>)" << std::endl;
-    std::cout << "  " << "-f|--acsm-file"       << "\t"   << "ACSM request file for epub download" << std::endl;
+    std::cout << "  " << "-f|--acsm-file"       << "\t"   << "Backward compatibility: ACSM request file for epub download" << std::endl;
     std::cout << "  " << "-e|--export-private-key"<< "\t" << "Export private key in DER format" << std::endl;
     std::cout << "  " << "-r|--resume"          << "\t\t" << "Try to resume download (in case of previous failure)" << std::endl;
     std::cout << "  " << "-v|--verbose"         << "\t\t" << "Increase verbosity, can be set multiple times" << std::endl;
     std::cout << "  " << "-V|--version"         << "\t\t" << "Display libgourou version" << std::endl;
     std::cout << "  " << "-h|--help"            << "\t\t" << "This help" << std::endl;
 
+    std::cout << "ADEPT Options:" << std::endl;
+    std::cout << "  " << "-D|--adept-directory" << "\t"   << ".adept directory that must contains device.xml, activation.xml and devicesalt" << std::endl;
+    std::cout << "  " << "-d|--device-file"     << "\t"   << "device.xml file from eReader" << std::endl;
+    std::cout << "  " << "-a|--activation-file" << "\t"   << "activation.xml file from eReader" << std::endl;
+    std::cout << "  " << "-k|--device-key-file" << "\t"   << "private device key file (eg devicesalt/devkey.bin) from eReader" << std::endl;
+
     std::cout << std::endl;
-    std::cout << "Device file, activation file and device key file are optionals. If not set, they are looked into :" << std::endl;
+    
+    std::cout << "Environment:" << std::endl;
+    std::cout << "Device file, activation file and device key file are optionals. If not set, they are looked into :" << std::endl << std::endl;
     std::cout << "  * $ADEPT_DIR environment variable" << std::endl;
     std::cout << "  * /home/<user>/.config/adept" << std::endl;
     std::cout << "  * Current directory" << std::endl;

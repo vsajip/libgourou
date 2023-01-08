@@ -124,10 +124,11 @@ public:
 
 static void usage(const char* cmd)
 {
-    std::cout << "Create new device files used by ADEPT DRM" << std::endl;
+    std::cout << basename((char*)cmd) << " create new device files used by ADEPT DRM" << std::endl << std::endl;
     
-    std::cout << "Usage: " << basename((char*)cmd) << " (-a|--anonymous) | ( (-u|--username) username [(-p|--password) password] ) [(-O|--output-dir) dir] [(-r|--random-serial)] [(-v|--verbose)] [(-h|--help)]" << std::endl << std::endl;
-    
+    std::cout << "Usage: " << basename((char*)cmd) << " OPTIONS" << std::endl << std::endl;
+
+    std::cout << "Global Options:" << std::endl;
     std::cout << "  " << "-a|--anonymous"  << "\t"   << "Anonymous account, no need for username/password (Use it only with a DRM removal software)" << std::endl;
     std::cout << "  " << "-u|--username"   << "\t\t" << "AdobeID username (ie adobe.com email account)" << std::endl;
     std::cout << "  " << "-p|--password"   << "\t\t" << "AdobeID password (asked if not set via command line) " << std::endl;
