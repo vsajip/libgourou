@@ -231,7 +231,7 @@ int main(int argc, char** argv)
     
     if (!_outputDir || _outputDir[0] == 0)
     {
-	outputDir = strdup(abspath(gourou::DRMProcessor::getDefaultAdeptDir().c_str()));
+	outputDir = strdup(gourou::DRMProcessor::getDefaultAdeptDir().c_str());
     }
     else
     {
