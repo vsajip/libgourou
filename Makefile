@@ -1,3 +1,6 @@
+LIBDIR ?= /usr/lib
+INCDIR ?= /usr/include
+
 AR ?= $(CROSS)ar
 CXX ?= $(CROSS)g++
 
@@ -17,14 +20,14 @@ BUILD_SHARED ?= 1
 BUILD_UTILS  ?= 1
 
 TARGETS =
-TARGET_BINARIES =
+TARGET_LIBRARIES =
 ifneq ($(BUILD_STATIC), 0)
   TARGETS += libgourou.a
-  TARGET_BINARIES += libgourou.a
+  TARGET_LIBRARIES += libgourou.a
 endif
 ifneq ($(BUILD_SHARED), 0)
   TARGETS += libgourou.so
-  TARGET_BINARIES += libgourou.so libgourou.so.$(VERSION)
+  TARGET_LIBRARIES += libgourou.so libgourou.so.$(VERSION)
 endif
 ifneq ($(BUILD_UTILS), 0)
   TARGETS += build_utils
@@ -42,9 +45,7 @@ CXXFLAGS += -DSTATIC_NONCE=1
 endif
 
 SRCDIR      := src
-INCDIR      := inc
 BUILDDIR    := obj
-TARGETDIR   := bin
 SRCEXT      := cpp
 OBJEXT      := o
 
@@ -74,24 +75,32 @@ libgourou: libgourou.a libgourou.so
 libgourou.a: $(OBJECTS) $(UPDFPARSERLIB)
 	$(AR) crs $@ obj/*.o  $(UPDFPARSERLIB)
 
-libgourou.so: $(OBJECTS) $(UPDFPARSERLIB)
-	$(CXX) obj/*.o -Wl,-soname,$@.$(VERSION) $(LDFLAGS) -o $@.$(VERSION) -shared
-	rm -f $@
-	ln -s $@.$(VERSION) $@
+libgourou.so.$(VERSION): $(OBJECTS) $(UPDFPARSERLIB)
+	$(CXX) obj/*.o -Wl,-soname,$@ $(LDFLAGS) -o $@ -shared
 
-build_utils:
+libgourou.so: libgourou.so.$(VERSION)
+	ln -f -s $^ $@
+
+build_utils: $(TARGET_LIBRARIES)
 	make -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DEST_DIR=$(DEST_DIR) PREFIX=$(PREFIX)
 
-install:
-	install -d $(DESTDIR)$(PREFIX)/lib/
+install: $(TARGET_LIBRARIES)
+	install -d $(DESTDIR)$(PREFIX)$(LIBDIR)
 # Use cp to preserver symlinks
-	cp --no-dereference $(TARGET_BINARIES) $(DESTDIR)$(PREFIX)/lib/
+	cp --no-dereference $(TARGET_LIBRARIES) $(DESTDIR)$(PREFIX)$(LIBDIR)
 	make -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DEST_DIR=$(DEST_DIR) PREFIX=$(PREFIX) install
 
 uninstall:
-	cd $(DESTDIR)$(PREFIX)/lib/
-	rm -f $(TARGET_BINARIES) libgourou.so.$(VERSION)
+	cd $(DESTDIR)$(PREFIX)/$(LIBDIR)
+	rm -f $(TARGET_LIBRARIES) libgourou.so.$(VERSION)
 	cd -
+
+install_headers:
+	install -d $(DESTDIR)$(PREFIX)/$(INCDIR)/libgourou
+	cp --no-dereference include/*.h $(DESTDIR)$(PREFIX)/$(INCDIR)/libgourou
+
+uninstall_headers:
+	rm -rf $(DESTDIR)$(PREFIX)/$(INCDIR)/libgourou
 
 clean:
 	rm -rf libgourou.a libgourou.so libgourou.so.$(VERSION)* obj

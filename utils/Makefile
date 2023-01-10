@@ -1,6 +1,10 @@
+BINDIR ?= /usr/bin
+MANDIR ?= /usr/share/man
 
 TARGET_BINARIES=acsmdownloader adept_activate adept_remove adept_loan_mgt
 TARGETS=$(TARGET_BINARIES) launcher
+
+MAN_PAGES=acsmdownloader adept_activate adept_remove adept_loan_mgt
 
 CXXFLAGS=-Wall -fPIC -I$(ROOT)/include -I$(ROOT)/lib/pugixml/src/
 
@@ -33,14 +37,18 @@ ${COMMON_LIB}: ${COMMON_DEPS} ${STATIC_DEP}
 %: %.cpp ${COMMON_LIB}
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-install:
-	install -d $(DESTDIR)$(PREFIX)/bin/
-	install -m 644 $(TARGET_BINARIES) $(DESTDIR)$(PREFIX)/bin/
+install: $(TARGET_BINARIES)
+	install -d $(DESTDIR)$(PREFIX)/$(BINDIR)
+	install -m 755 $(TARGET_BINARIES) $(DESTDIR)$(PREFIX)/$(BINDIR)
+	install -d $(DESTDIR)$(PREFIX)/$(MANDIR)/man1
+	install -m 644 man/*.1 $(DESTDIR)$(PREFIX)/$(MANDIR)/man1
 
 uninstall:
-	cd $(DESTDIR)$(PREFIX)/bin/
+	cd $(DESTDIR)$(PREFIX)/$(BINDIR)
 	rm -f $(TARGET_BINARIES)
 	cd -
+	cd $(DESTDIR)$(PREFIX)/$(MANDIR)/man1
+	rm -f $(addsuffix .1,$(TARGET_BINARIES)
 
 clean:
 	rm -f $(TARGETS) $(COMMON_LIB)
