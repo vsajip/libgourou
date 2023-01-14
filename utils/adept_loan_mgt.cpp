@@ -252,7 +252,7 @@ private:
 
 	std::cout.width (fillExpiration);
 	std::cout << "";
-	std::cout << "Exipration";
+	std::cout << "Expiration";
 	std::cout.width (fillExpiration);
 	std::cout << "" << std::endl;
 
