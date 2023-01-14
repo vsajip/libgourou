@@ -30,12 +30,12 @@ COMMON_LIB  = utils.a
 
 all: $(TARGETS)
 
-${COMMON_LIB}: ${COMMON_DEPS} ${STATIC_DEP}
-	$(CXX) $(CXXFLAGS) ${COMMON_DEPS} $(LDFLAGS) -c
-	$(AR) crs $@ ${COMMON_OBJECTS} $(STATIC_DEP)
+${COMMON_LIB}: $(COMMON_DEPS)
+	$(CXX) $(CXXFLAGS) $(COMMON_DEPS) $(LDFLAGS) -c
+	$(AR) crs $@ $(COMMON_OBJECTS)
 
-%: %.cpp ${COMMON_LIB}
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+%: %.cpp $(COMMON_LIB) $(STATIC_DEP)
+	$(CXX) $(CXXFLAGS) $^ $(STATIC_DEP) $(LDFLAGS) -o $@
 
 install: $(TARGET_BINARIES)
 	install -d $(DESTDIR)$(PREFIX)/$(BINDIR)

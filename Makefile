@@ -11,7 +11,7 @@ endif
 UPDFPARSERLIB = ./lib/updfparser/libupdfparser.a
 
 CXXFLAGS += -Wall -fPIC -I./include -I./usr/include/pugixml -I./lib/updfparser/include
-LDFLAGS = $(UPDFPARSERLIB) -lpugixml
+LDFLAGS = -lpugixml
 
 VERSION     := $(shell cat include/libgourou.h |grep LIBGOUROU_VERSION|cut -d '"' -f2)
 
@@ -21,9 +21,13 @@ BUILD_UTILS  ?= 1
 
 TARGETS =
 TARGET_LIBRARIES =
+ifneq ($(STATIC_UTILS),)
+  BUILD_STATIC=1
+endif
 ifneq ($(BUILD_STATIC), 0)
   TARGETS += libgourou.a
   TARGET_LIBRARIES += libgourou.a
+  STATIC_UTILS=1
 endif
 ifneq ($(BUILD_SHARED), 0)
   TARGETS += libgourou.so
@@ -70,25 +74,25 @@ obj:
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	$(CXX) $(CXXFLAGS) -c $^ -o $@
 
-libgourou: libgourou.a libgourou.so
+libgourou: $(TARGET_LIBRARIES)
 
 libgourou.a: $(OBJECTS) $(UPDFPARSERLIB)
-	$(AR) crs $@ obj/*.o  $(UPDFPARSERLIB)
+	$(AR) rcs --thin $@ $^
 
 libgourou.so.$(VERSION): $(OBJECTS) $(UPDFPARSERLIB)
-	$(CXX) obj/*.o -Wl,-soname,$@ $(LDFLAGS) -o $@ -shared
+	$(CXX) $^ -Wl,-soname,$@ $(LDFLAGS) -o $@ -shared
 
 libgourou.so: libgourou.so.$(VERSION)
 	ln -f -s $^ $@
 
 build_utils: $(TARGET_LIBRARIES)
-	make -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DEST_DIR=$(DEST_DIR) PREFIX=$(PREFIX)
+	$(MAKE) -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DEST_DIR=$(DEST_DIR) PREFIX=$(PREFIX)
 
 install: $(TARGET_LIBRARIES)
 	install -d $(DESTDIR)$(PREFIX)$(LIBDIR)
 # Use cp to preserver symlinks
 	cp --no-dereference $(TARGET_LIBRARIES) $(DESTDIR)$(PREFIX)$(LIBDIR)
-	make -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DEST_DIR=$(DEST_DIR) PREFIX=$(PREFIX) install
+	$(MAKE) -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DEST_DIR=$(DEST_DIR) PREFIX=$(PREFIX) install
 
 uninstall:
 	cd $(DESTDIR)$(PREFIX)/$(LIBDIR)
@@ -104,8 +108,8 @@ uninstall_headers:
 
 clean:
 	rm -rf libgourou.a libgourou.so libgourou.so.$(VERSION)* obj
-	make -C utils clean
+	$(MAKE) -C utils clean
 
 ultraclean: clean
 	rm -rf lib
-	make -C utils ultraclean
+	$(MAKE) -C utils ultraclean
