@@ -6,7 +6,7 @@ TARGETS=$(TARGET_BINARIES) launcher
 
 MAN_PAGES=acsmdownloader adept_activate adept_remove adept_loan_mgt
 
-CXXFLAGS=-Wall -fPIC -I$(ROOT)/include -I$(ROOT)/lib/pugixml/src/
+CXXFLAGS=-Wall -fPIC -I$(ROOT)/include
 
 STATIC_DEP=
 LDFLAGS += -L$(ROOT) -lcrypto -lzip -lz -lcurl -lpugixml
