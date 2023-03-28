@@ -31,6 +31,7 @@
 #include <termios.h>
 #include <string.h>
 #include <limits.h>
+#include <libgen.h>
 
 #include <iostream>
 #include <ostream>

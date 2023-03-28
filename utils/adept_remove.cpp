@@ -27,6 +27,7 @@
 */
 
 #include <getopt.h>
+#include <libgen.h>
 
 #include <iostream>
 
