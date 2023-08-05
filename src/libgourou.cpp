@@ -1363,6 +1363,30 @@ namespace gourou
 
 		    delete[] clearData;
 		}
+		else if (dictData->type() == uPDFParser::DataType::HEXASTRING)
+		{
+		    string = ((uPDFParser::HexaString*) dictData)->value();
+		    ByteArray hexStr = ByteArray::fromHex(string);
+		    
+		    unsigned char* encryptedData = hexStr.data();
+		    unsigned int dataLength = hexStr.size();
+		    unsigned char* clearData = new unsigned char[dataLength];
+		    unsigned int dataOutLength;
+
+		    GOUROU_LOG(DEBUG, "Decrypt hexa string " << dictIt->first << " " << dataLength);
+
+		    client->decrypt(CryptoInterface::ALGO_RC4, CryptoInterface::CHAIN_ECB,
+				    tmpKey, sizeof(tmpKey), /* Key */
+				    NULL, 0, /* IV */
+				    encryptedData, dataLength,
+				    clearData, &dataOutLength);
+
+		    ByteArray clearHexStr = ByteArray(clearData, dataOutLength);
+		    decodedStrings[dictIt->first] = new uPDFParser::HexaString(
+			clearHexStr.toHex());
+
+		    delete[] clearData;
+		}
 	    }
 		
 	    for (dictIt = decodedStrings.begin(); dictIt != decodedStrings.end(); dictIt++)
