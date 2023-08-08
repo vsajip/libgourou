@@ -1,12 +1,9 @@
-LIBDIR ?= /usr/lib
-INCDIR ?= /usr/include
+PREFIX ?= /usr/local
+LIBDIR ?= /lib
+INCDIR ?= /include
 
 AR ?= $(CROSS)ar
 CXX ?= $(CROSS)g++
-
-ifeq ($(PREFIX),)
-    PREFIX := /usr/local
-endif
 
 UPDFPARSERLIB = ./lib/updfparser/libupdfparser.a
 
@@ -86,13 +83,13 @@ libgourou.so: libgourou.so.$(VERSION)
 	ln -f -s $^ $@
 
 build_utils: $(TARGET_LIBRARIES)
-	$(MAKE) -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DEST_DIR=$(DEST_DIR) PREFIX=$(PREFIX)
+	$(MAKE) -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DESTDIR=$(DESTDIR) PREFIX=$(PREFIX)
 
 install: $(TARGET_LIBRARIES)
 	install -d $(DESTDIR)$(PREFIX)$(LIBDIR)
 # Use cp to preserver symlinks
 	cp --no-dereference $(TARGET_LIBRARIES) $(DESTDIR)$(PREFIX)$(LIBDIR)
-	$(MAKE) -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DEST_DIR=$(DEST_DIR) PREFIX=$(PREFIX) install
+	$(MAKE) -C utils ROOT=$(PWD) CXX=$(CXX) AR=$(AR) DEBUG=$(DEBUG) STATIC_UTILS=$(STATIC_UTILS) DESTDIR=$(DESTDIR) PREFIX=$(PREFIX) install
 
 uninstall:
 	cd $(DESTDIR)$(PREFIX)/$(LIBDIR)

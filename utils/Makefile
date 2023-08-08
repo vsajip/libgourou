@@ -1,5 +1,5 @@
-BINDIR ?= /usr/bin
-MANDIR ?= /usr/share/man
+BINDIR ?= /bin
+MANDIR ?= /share/man
 
 TARGET_BINARIES=acsmdownloader adept_activate adept_remove adept_loan_mgt
 TARGETS=$(TARGET_BINARIES) launcher
