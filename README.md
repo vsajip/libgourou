@@ -76,6 +76,8 @@ BUILD_STATIC build libgourou.a if 1, nothing if 0, can be combined with BUILD_SH
 
 BUILD_SHARED build libgourou.so if 1, nothing if 0, can be combined with BUILD_STATIC
 
+other variables are DESTDIR and PREFIX to handle destination install directory
+
 * Default value
 
 
@@ -147,3 +149,4 @@ Special thanks
 
   * _Jens_ for all test samples and utils testing
   * _Milian_ for debug & code
+  * _Berwyn H_ for all test samples, feedbacks, patches and kind donation
