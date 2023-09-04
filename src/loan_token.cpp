@@ -29,24 +29,13 @@ namespace gourou
 	if (!node)
 	    EXCEPTION(FFI_INVALID_LOAN_TOKEN, "No loanToken element in document");
 
-	node = doc.select_node("/envelope/loanToken/loan").node();
+	node = doc.select_node("/envelope/fulfillmentResult/fulfillment").node();
 
 	if (node)
 	    properties["id"] = node.first_child().value();
 	else
 	{
-	    node = doc.select_node("/envelope/fulfillmentResult/resourceItemInfo/licenseToken/permissions/display/loan").node();
-
-	    if (node)
-		properties["id"] = node.first_child().value();
-	    else
-	    {
-		node = doc.select_node("/envelope/fulfillmentResult/resourceItemInfo/licenseToken/permissions/play/loan").node();
-		if (node)
-		    properties["id"] = node.first_child().value();
-		else
-		    EXCEPTION(FFI_INVALID_LOAN_TOKEN, "No loanToken/loan element in document");
-	    }
+	    EXCEPTION(FFI_INVALID_LOAN_TOKEN, "No fulfillment element in document");
 	}
 
 	node = doc.select_node("/envelope/loanToken/operatorURL").node();
