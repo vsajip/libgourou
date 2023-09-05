@@ -67,10 +67,11 @@ namespace gourou
 	 * @brief Fulfill ACSM file to server in order to retrieve ePub fulfillment item
 	 *
 	 * @param ACSMFile       Path of ACSMFile
+	 * @param notify         Notify server if requested by response
 	 *
 	 * @return a FulfillmentItem if all is OK
 	 */
-	FulfillmentItem* fulfill(const std::string& ACSMFile);
+	FulfillmentItem* fulfill(const std::string& ACSMFile, bool notify=true);
 
 	/**
 	 * @brief Once fulfilled, ePub file needs to be downloaded.
@@ -102,8 +103,9 @@ namespace gourou
 	 *
 	 * @param loanID          Loan ID received during fulfill
 	 * @param operatorURL     URL of operator that loans this book
+	 * @param notify          Notify server if requested by response
 	 */
-	void returnLoan(const std::string& loanID, const std::string& operatorURL);
+	void returnLoan(const std::string& loanID, const std::string& operatorURL, bool notify=true);
 
 	/**
 	 * @brief Return default ADEPT directory (ie /home/<user>/.config/adept)
@@ -156,7 +158,7 @@ namespace gourou
 	 * @brief Send HTTP POST request to URL with document as POSTData
 	 */
 	ByteArray sendRequest(const pugi::xml_document& document, const std::string& url);
-
+	
 	/**
 	 * @brief In place encrypt data with private device key
 	 */
@@ -233,6 +235,9 @@ namespace gourou
 	void buildSignInRequest(pugi::xml_document& signInRequest, const std::string& adobeID, const std::string& adobePassword, const std::string& authenticationCertificate);
 	void fetchLicenseServiceCertificate(const std::string& licenseURL,
 					    const std::string& operatorURL);
+	void buildNotifyReq(pugi::xml_document& returnReq, pugi::xml_node& body);	
+	void notifyServer(pugi::xml_node& notifyRoot);
+	void notifyServer(pugi::xml_document& fulfillReply);
 	std::string encryptedKeyFirstPass(pugi::xml_document& rightsDoc, const std::string& encryptedKey, const std::string& keyType);
 	void decryptADEPTKey(pugi::xml_document& rightsDoc, unsigned char* decryptedKey, const unsigned char* encryptionKey=0, unsigned encryptionKeySize=0);
 	void removeEPubDRM(const std::string& filenameIn, const std::string& filenameOut, const unsigned char* encryptionKey, unsigned encryptionKeySize);

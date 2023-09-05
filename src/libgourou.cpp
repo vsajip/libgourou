@@ -495,7 +495,7 @@ namespace gourou
 	user->updateActivationFile(activationDoc);
     }
     
-    FulfillmentItem* DRMProcessor::fulfill(const std::string& ACSMFile)
+    FulfillmentItem* DRMProcessor::fulfill(const std::string& ACSMFile, bool notify)
     {
 	if (!user->getPKCS12().length())
 	    EXCEPTION(FF_NOT_ACTIVATED, "Device not activated");
@@ -580,7 +580,12 @@ namespace gourou
 	
 	fetchLicenseServiceCertificate(licenseURL, operatorURL);
 
-	return new FulfillmentItem(fulfillReply, user);
+	FulfillmentItem* item = new FulfillmentItem(fulfillReply, user);
+
+	if (notify)
+	    notifyServer(fulfillReply);
+	    
+	return item;
     }
 
     DRMProcessor::ITEM_TYPE DRMProcessor::download(FulfillmentItem* item, std::string path, bool resume)
@@ -873,7 +878,8 @@ namespace gourou
 #endif
     }
 
-    void DRMProcessor::returnLoan(const std::string& loanID, const std::string& operatorURL)
+    void DRMProcessor::returnLoan(const std::string& loanID, const std::string& operatorURL,
+				  bool notify)
     {
 	pugi::xml_document returnReq;
 
@@ -881,9 +887,73 @@ namespace gourou
 
 	buildReturnReq(returnReq, loanID, operatorURL);
 
-	sendRequest(returnReq, operatorURL + "/LoanReturn");
+	ByteArray replyData = sendRequest(returnReq, operatorURL + "/LoanReturn");
+	
+	pugi::xml_document fulfillReply;
+
+	fulfillReply.load_string((const char*)replyData.data());
+
+	if (notify)
+	    notifyServer(fulfillReply);
     }
 
+    void DRMProcessor::buildNotifyReq(pugi::xml_document& returnReq, pugi::xml_node& body)
+    {
+	pugi::xml_node decl = returnReq.append_child(pugi::node_declaration);
+	decl.append_attribute("version") = "1.0";
+	
+	pugi::xml_node root = returnReq.append_child("adept:notification");
+	root.append_attribute("xmlns:adept") = ADOBE_ADEPT_NS;
+
+	appendTextElem(root, "adept:user",      user->getUUID());
+	appendTextElem(root, "adept:device",    user->getDeviceUUID());
+	body = root.append_copy(body);
+	body.append_attribute("xmlns") = ADOBE_ADEPT_NS;
+	
+	addNonce(root);
+	signNode(root);
+    }
+
+    void DRMProcessor::notifyServer(pugi::xml_node& notifyRoot)
+    {
+	std::string notifyUrl = extractTextElem(notifyRoot, "//notifyURL", false);
+	pugi::xml_node notifyBody = getNode(notifyRoot, "//body", false);
+	
+	if (notifyUrl == "")
+	{
+	    GOUROU_LOG(INFO, "No notify URL");
+	    return;
+	}
+
+	if (!notifyBody)
+	{
+	    GOUROU_LOG(INFO, "No notify body");
+	    return;
+	}
+
+	pugi::xml_document notifyReq;
+	buildNotifyReq(notifyReq, notifyBody);
+
+	sendRequest(notifyReq, notifyUrl);
+    }
+    
+    void DRMProcessor::notifyServer(pugi::xml_document& fulfillReply)
+    {
+	pugi::xpath_node_set notifySet = fulfillReply.select_nodes("//notify");
+
+	if (notifySet.empty())
+	{
+	    GOUROU_LOG(DEBUG, "No notify request");
+	    return;
+	}
+
+	for (pugi::xpath_node_set::const_iterator it = notifySet.begin(); it != notifySet.end(); ++it)
+	{
+	    pugi::xml_node notifyRoot = it->node();
+	    notifyServer(notifyRoot);
+	}
+    }
+    
     ByteArray DRMProcessor::encryptWithDeviceKey(const unsigned char* data, unsigned int len)
     {
 	const unsigned char* deviceKey = device->getDeviceKey();

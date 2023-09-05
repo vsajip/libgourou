@@ -235,12 +235,7 @@ namespace gourou
 	return ltrim(rtrim(s, t), t);
     }
 
-    /**
-     * @brief Extract text node from tag in document
-     * It can throw an exception if tag does not exists
-     * or just return an empty value
-     */
-    static inline std::string extractTextElem(const pugi::xml_node& root, const char* tagName, bool throwOnNull=true)
+    static inline pugi::xml_node getNode(const pugi::xml_node& root, const char* tagName, bool throwOnNull=true)
     {
         pugi::xpath_node xpath_node = root.select_node(tagName);
 
@@ -249,10 +244,23 @@ namespace gourou
 	    if (throwOnNull)
 		EXCEPTION(GOUROU_TAG_NOT_FOUND, "Tag " << tagName << " not found");
 	    
-            return "";
+            return pugi::xml_node();
 	}
 
-	pugi::xml_node node = xpath_node.node().first_child();
+	return xpath_node.node();
+
+    }
+    
+    /**
+     * @brief Extract text node from tag in document
+     * It can throw an exception if tag does not exists
+     * or just return an empty value
+     */
+    static inline std::string extractTextElem(const pugi::xml_node& root, const char* tagName, bool throwOnNull=true)
+    {
+	pugi::xml_node node = getNode(root, tagName, throwOnNull);
+
+	node = node.first_child();
 
 	if (!node)
 	{
@@ -267,23 +275,39 @@ namespace gourou
     }
 
     /**
+     * @brief Set text node of a tag in document
+     * It can throw an exception if tag does not exists
+     */
+    static inline void setTextElem(const pugi::xml_node& root, const char* tagName,
+				   const std::string& value, bool throwOnNull=true)
+    {
+	pugi::xml_node node = getNode(root, tagName, throwOnNull);
+
+	if (!node)
+	{
+	    if (throwOnNull)
+		EXCEPTION(GOUROU_TAG_NOT_FOUND, "Text element for tag " << tagName << " not found");
+            return;
+	}
+
+	node = node.first_child();
+
+	if (!node)
+	    node.append_child(pugi::node_pcdata).set_value(value.c_str());
+	else
+	    node.set_value(value.c_str());
+    }
+
+    /**
      * @brief Extract text attribute from tag in document
      * It can throw an exception if attribute does not exists
      * or just return an empty value
      */
     static inline std::string extractTextAttribute(const pugi::xml_node& root, const char* tagName, const char* attributeName, bool throwOnNull=true)
     {
-        pugi::xpath_node xpath_node = root.select_node(tagName);
+	pugi::xml_node node = getNode(root, tagName, throwOnNull);
 
-        if (!xpath_node)
-	{
-	    if (throwOnNull)
-		EXCEPTION(GOUROU_TAG_NOT_FOUND, "Tag " << tagName << " not found");
-	    
-            return "";
-	}
-
-	pugi::xml_attribute attr = xpath_node.node().attribute(attributeName);
+	pugi::xml_attribute attr = node.attribute(attributeName);
 
 	if (!attr)
 	{
