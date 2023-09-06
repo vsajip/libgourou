@@ -8,7 +8,7 @@ Architecture
 ------------
 
 Like RMSDK, libgourou has a client/server scheme. All platform specific functions (crypto, network...) has to be implemented in a client class (that derives from DRMProcessorClient) while server implements ADEPT protocol.
-A reference implementation using Qt, OpenSSL and libzip is provided (in _utils_ directory).
+A reference implementation using cURL, OpenSSL and libzip is provided (in _utils_ directory).
 
 Main fucntions to use from gourou::DRMProcessor are :
 
