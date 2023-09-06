@@ -46,6 +46,7 @@ static       bool  exportPrivateKey = false;
 static const char* outputFile     = 0;
 static const char* outputDir      = 0;
 static       bool  resume         = false;
+static       bool  notify         = true;
 
 
 class ACSMDownloader
@@ -82,7 +83,7 @@ public:
 	    }
 	    else
 	    {
-		gourou::FulfillmentItem* item = processor.fulfill(acsmFile);
+		gourou::FulfillmentItem* item = processor.fulfill(acsmFile, notify);
 
 		std::string filename;
 		if (!outputFile)
@@ -190,6 +191,7 @@ static void usage(const char* cmd)
     std::cout << "  " << "-f|--acsm-file"       << "\t"   << "Backward compatibility: ACSM request file for epub download" << std::endl;
     std::cout << "  " << "-e|--export-private-key"<< "\t" << "Export private key in DER format" << std::endl;
     std::cout << "  " << "-r|--resume"          << "\t\t" << "Try to resume download (in case of previous failure)" << std::endl;
+    std::cout << "  " << "-N|--no-notify"       << "\t\t" << "Don't notify server, even if requested" << std::endl;
     std::cout << "  " << "-v|--verbose"         << "\t\t" << "Increase verbosity, can be set multiple times" << std::endl;
     std::cout << "  " << "-V|--version"         << "\t\t" << "Display libgourou version" << std::endl;
     std::cout << "  " << "-h|--help"            << "\t\t" << "This help" << std::endl;
@@ -232,13 +234,14 @@ int main(int argc, char** argv)
 	    {"acsm-file",        required_argument, 0,  'f' },
 	    {"export-private-key",no_argument,      0,  'e' },
 	    {"resume",           no_argument,       0,  'r' },
+	    {"no-notify",        no_argument,       0,  'N' },
 	    {"verbose",          no_argument,       0,  'v' },
 	    {"version",          no_argument,       0,  'V' },
 	    {"help",             no_argument,       0,  'h' },
 	    {0,                  0,                 0,  0 }
 	};
 
-	c = getopt_long(argc, argv, "D:d:a:k:O:o:f:ervVh",
+	c = getopt_long(argc, argv, "D:d:a:k:O:o:f:erNvVh",
                         long_options, &option_index);
 	if (c == -1)
 	    break;
@@ -275,6 +278,9 @@ int main(int argc, char** argv)
 	    break;
 	case 'r':
 	    resume = true;
+	    break;
+	case 'N':
+	    notify = false;
 	    break;
 	case 'v':
 	    verbose++;

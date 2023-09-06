@@ -52,6 +52,7 @@ static const char* devicekeyFile  = "devicesalt";
 static       bool  list           = false;
 static const char* returnID       = 0;
 static const char* deleteID       = 0;
+static       bool  notify         = true;
 
 struct Loan
 {
@@ -296,7 +297,7 @@ private:
 	    return;
 	}
 
-	processor.returnLoan(loan->id, loan->operatorURL);
+	processor.returnLoan(loan->id, loan->operatorURL, notify);
 	
 	deleteID = returnID;
 	if (deleteLoan(false))
@@ -342,6 +343,7 @@ static void usage(const char* cmd)
     std::cout << "  " << "-l|--list"            << "\t\t" << "List all loaned books" << std::endl;
     std::cout << "  " << "-r|--return"          << "\t\t" << "Return a loaned book" << std::endl;
     std::cout << "  " << "-d|--delete"          << "\t\t" << "Delete a loan entry without returning it" << std::endl;
+    std::cout << "  " << "-N|--no-notify"       << "\t\t" << "Don't notify server, even if requested" << std::endl;
     std::cout << "  " << "-v|--verbose"         << "\t\t" << "Increase verbosity, can be set multiple times" << std::endl;
     std::cout << "  " << "-V|--version"         << "\t\t" << "Display libgourou version" << std::endl;
     std::cout << "  " << "-h|--help"            << "\t\t" << "This help" << std::endl;
@@ -375,6 +377,7 @@ int main(int argc, char** argv)
 	    {"list",             no_argument,       0,  'l' },
 	    {"return",           no_argument,       0,  'r' },
 	    {"delete",           no_argument,       0,  'd' },
+	    {"no-notify",        no_argument,       0,  'N' },
 	    {"verbose",          no_argument,       0,  'v' },
 	    {"version",          no_argument,       0,  'V' },
 	    {"help",             no_argument,       0,  'h' },
@@ -401,6 +404,9 @@ int main(int argc, char** argv)
 	case 'd':
 	    deleteID = optarg;
 	    actions++;
+	    break;
+	case 'N':
+	    notify = false;
 	    break;
 	case 'v':
 	    verbose++;
