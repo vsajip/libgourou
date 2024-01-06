@@ -183,8 +183,13 @@ private:
 	    loan->bookName = node.first_child().value();
 
 	    struct tm tm;
+#ifdef __ANDROID__
+	    res = strptime(loan->validity.c_str(), "%Y-%m-%dT%H:%M:%S%z", &tm);
+#else
 	    res = strptime(loan->validity.c_str(), "%Y-%m-%dT%H:%M:%S%Z", &tm);
-	    if (*res == 0)
+#endif
+	    
+	    if (res != NULL && *res == 0)
 	    {
 		if (mktime(&tm) <= time(NULL))
 		    loan->validity = "     (Expired)";
