@@ -30,6 +30,7 @@
 #include <algorithm> 
 #include <cctype>
 #include <locale>
+#include <stdlib.h>
 
 #define OPENSSL_NO_DEPRECATED 1
 
@@ -60,6 +61,14 @@ DRMProcessorClientImpl::DRMProcessorClientImpl():
     if (!deflt)
 	EXCEPTION(gourou::CLIENT_OSSL_ERROR, "Error, OpenSSL default provider not available");
 #endif
+
+#ifdef WIN32
+    strcpy(cookiejar, "C:\\temp\\libgourou_cookie_jar_XXXXXX");
+#else
+    strcpy(cookiejar, "/tmp/libgourou_cookie_jar_XXXXXX");
+#endif
+    
+    mkstemp(cookiejar);
 }
 
 DRMProcessorClientImpl::~DRMProcessorClientImpl()
@@ -71,6 +80,8 @@ DRMProcessorClientImpl::~DRMProcessorClientImpl()
     if (deflt)
 	OSSL_PROVIDER_unload(deflt);
 #endif
+
+    unlink(cookiejar);
 }
 
 /* Digest interface */
@@ -227,6 +238,7 @@ std::string DRMProcessorClientImpl::sendHTTPRequest(const std::string& URL, cons
     }
 
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+    curl_easy_setopt(curl, CURLOPT_COOKIEJAR, cookiejar);
 
     if (POSTData.size())
     {
@@ -290,7 +302,13 @@ std::string DRMProcessorClientImpl::sendHTTPRequest(const std::string& URL, cons
    
     if (res != CURLE_OK)
 	EXCEPTION(gourou::CLIENT_NETWORK_ERROR, "Error " << curl_easy_strerror(res));
-    
+
+    long http_code = 400;
+    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+    if (http_code >= 400)
+	EXCEPTION(gourou::CLIENT_HTTP_ERROR, "HTTP Error code " << http_code);
+
     if ((downloadedBytes >= DISPLAY_THRESHOLD || replyData.size() >= DISPLAY_THRESHOLD) &&
 	gourou::logLevel >= gourou::LG_LOG_WARN)
 	std::cout << std::endl;

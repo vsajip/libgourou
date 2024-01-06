@@ -136,6 +136,8 @@ private:
 #else
     void *legacy, *deflt;
 #endif
+
+    char cookiejar[64];
 };
 
 #endif
