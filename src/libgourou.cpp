@@ -398,31 +398,7 @@ namespace gourou
 	    }
 	}
 	
-	doOperatorAuth(operatorURL);
-	
-	// Add new operatorURL to list
-	pugi::xml_document activationDoc;
-	user->readActivation(activationDoc);
-
-	pugi::xml_node root;
-	pugi::xpath_node xpathRes = activationDoc.select_node("//adept:operatorURLList");
-
-	// Create adept:operatorURLList if it doesn't exists
-	if (!xpathRes)
-	{
-	    xpathRes = activationDoc.select_node("/activationInfo");
-	    root = xpathRes.node();
-	    root = root.append_child("adept:operatorURLList");
-	    root.append_attribute("xmlns:adept") = ADOBE_ADEPT_NS;
-
-	    appendTextElem(root, "adept:user",       user->getUUID());
-	}
-	else
-	    root = xpathRes.node();
-
-	appendTextElem(root, "adept:operatorURL", operatorURL);
-
-	user->updateActivationFile(activationDoc);
+	doOperatorAuth(operatorURL);	
     }
 
     void DRMProcessor::buildFulfillRequest(pugi::xml_document& acsmDoc, pugi::xml_document& fulfillReq)
@@ -491,6 +467,24 @@ namespace gourou
 
 	appendTextElem(root, "adept:licenseURL", licenseURL);
 	appendTextElem(root, "adept:certificate", certificate);
+
+	// Add new operatorURL to list
+	xpathRes = activationDoc.select_node("//adept:operatorURLList");
+
+	// Create adept:operatorURLList if it doesn't exists
+	if (!xpathRes)
+	{
+	    xpathRes = activationDoc.select_node("/activationInfo");
+	    root = xpathRes.node();
+	    root = root.append_child("adept:operatorURLList");
+	    root.append_attribute("xmlns:adept") = ADOBE_ADEPT_NS;
+
+	    appendTextElem(root, "adept:user",       user->getUUID());
+	}
+	else
+	    root = xpathRes.node();
+
+	appendTextElem(root, "adept:operatorURL", operatorURL);
 
 	user->updateActivationFile(activationDoc);
     }
