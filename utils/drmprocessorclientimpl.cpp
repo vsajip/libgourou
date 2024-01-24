@@ -298,13 +298,14 @@ std::string DRMProcessorClientImpl::sendHTTPRequest(const std::string& URL, cons
     }
     
     curl_slist_free_all(list);
+
+    long http_code = 400;
+    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+
     curl_easy_cleanup(curl);
    
     if (res != CURLE_OK)
 	EXCEPTION(gourou::CLIENT_NETWORK_ERROR, "Error " << curl_easy_strerror(res));
-
-    long http_code = 400;
-    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
 
     if (http_code >= 400)
 	EXCEPTION(gourou::CLIENT_HTTP_ERROR, "HTTP Error code " << http_code);
