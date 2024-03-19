@@ -1317,6 +1317,7 @@ namespace gourou
 	std::vector<uPDFParser::Object*> objects = parser.objects();
 	std::vector<uPDFParser::Object*>::iterator it;
 	std::vector<uPDFParser::Object*>::reverse_iterator rIt;
+	std::vector<uPDFParser::Object*> ebxObjects;
 	unsigned char decryptedKey[16];
 	int ebxId;
 	
@@ -1327,7 +1328,7 @@ namespace gourou
 	    {
 		EBXHandlerFound = true;
 		uPDFParser::Object* ebx = *rIt;
-
+		
 		ebxVersion  = (uPDFParser::Integer*)(*ebx)["V"];
 		if (ebxVersion->value() != 4)
 		{
@@ -1338,7 +1339,7 @@ namespace gourou
 		{
 		    EXCEPTION(DRM_ERR_ENCRYPTION_KEY, "No ADEPT_LICENSE found");
 		}
-
+		
 		uPDFParser::String* licenseObject = (uPDFParser::String*)(*ebx)["ADEPT_LICENSE"];
 		
 		std::string value = licenseObject->value();
@@ -1375,7 +1376,7 @@ namespace gourou
 	        
 	    if (object->objectId() == ebxId)
 	    {
-		// object->deleteKey("Filter");
+		ebxObjects.push_back(object);
 		continue;
 	    }
 
@@ -1485,6 +1486,9 @@ namespace gourou
 	    }
 	}
 
+	for(it = ebxObjects.begin(); it != ebxObjects.end(); it++)
+	    parser.removeObject(*it);
+	
 	uPDFParser::Object& trailer = parser.getTrailer();
 	trailer.deleteKey("Encrypt");
 
