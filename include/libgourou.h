@@ -37,7 +37,7 @@
 #define ACS_SERVER              "http://adeactivate.adobe.com/adept"
 #endif
 
-#define LIBGOUROU_VERSION       "0.8.5"
+#define LIBGOUROU_VERSION       "0.8.6"
 
 namespace gourou
 {
