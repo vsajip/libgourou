@@ -1,16 +1,16 @@
 Introduction
 ------------
 
-libgourou is a free implementation of Adobe's ADEPT protocol used to add DRM on ePub/PDF files. It overcome the lacks of Adobe support for Linux platforms.
+libgourou is a free implementation of Adobe's ADEPT protocol used to add DRM on ePub/PDF files. It overcomes the lack of Adobe support for Linux platforms.
 
 
 Architecture
 ------------
 
-Like RMSDK, libgourou has a client/server scheme. All platform specific functions (crypto, network...) has to be implemented in a client class (that derives from DRMProcessorClient) while server implements ADEPT protocol.
+Like RMSDK, libgourou has a client/server scheme. All platform specific functions (crypto, network...) have to be implemented in a client class (that derives from DRMProcessorClient) while server implements ADEPT protocol.
 A reference implementation using cURL, OpenSSL and libzip is provided (in _utils_ directory).
 
-Main fucntions to use from gourou::DRMProcessor are :
+Main functions to use from gourou::DRMProcessor are:
 
   * Get an ePub from an ACSM file : _fulfill()_ and _download()_
   * Create a new device : _createDRMProcessor()_
@@ -18,32 +18,32 @@ Main fucntions to use from gourou::DRMProcessor are :
   * Remove DRM : _removeDRM()_
   * Return loaned book : _returnLoan()_
 
-You can import configuration from (at least) :
+You can import configuration from (at least):
 
   * Kobo device    : .adept/device.xml, .adept/devicesalt  and .adept/activation.xml
   * Bookeen device : .adobe-digital-editions/device.xml, root/devkey.bin and .adobe-digital-editions/activation.xml
   
-Or create a new one. Be careful : there is a limited number of devices that can be created bye one account.
+Or create a new one. Be careful: there is a limited number of devices that can be created by one account.
 
-ePub are encrypted using a shared key : one account / multiple devices, so you can create and register a device into your computer and read downloaded (and encrypted) ePub file with your eReader configured using the same AdobeID account.
+ePub are encrypted using a shared key: one account / multiple devices, so you can create and register a device into your computer and read downloaded (and encrypted) ePub file with your eReader configured using the same AdobeID account.
 
-For those who wants to remove DRM without adept_remove, you can export your private key and import it within [Calibre](https://calibre-ebook.com/) an its DeDRM plugin.
+For those who want to remove DRM without adept_remove, you can export your private key and import it within [Calibre](https://calibre-ebook.com/) an its DeDRM plugin.
 
 
 Dependencies
 ------------
 
-For libgourou :
+For libgourou:
 
 _externals_ :
 
   * libpugixml
 
-_internals_ :
+_internals_:
 
   * uPDFParser
 
-For utils :
+For utils:
 
   * libcurl
   * OpenSSL
@@ -52,7 +52,7 @@ For utils :
 
 
 Internal libraries are automatically fetched and statically compiled during the first run.
-When you update libgourou's repository, **don't forget to update internal libraries** with :
+When you update libgourou's repository, **don't forget to update internal libraries** with:
 
     make update_lib
 
@@ -92,31 +92,31 @@ You can optionaly specify your .adept directory
 
     export ADEPT_DIR=/home/XXX
 
-Then, use utils as following :
+Then, use utils as following:
 
-You can import configuration from your eReader or create a new one with _utils/adept\_activate_ :
+You can import configuration from your eReader or create a new one with _utils/adept\_activate_:
 
     ./utils/adept_activate -u <AdobeID USERNAME>
 
 Then a _/home/<user>/.config/adept_ directory is created with all configuration file
 
-To download an ePub/PDF :
+To download an ePub/PDF:
 
     ./utils/acsmdownloader <ACSM_FILE>
 
-To export your private key (for DeDRM software) :
+To export your private key (for DeDRM software):
 
     ./utils/acsmdownloader --export-private-key [-o adobekey_1.der]
 
-To remove ADEPT DRM :
+To remove ADEPT DRM:
 
     ./utils/adept_remove <encryptedFile>
 
-To list loaned books :
+To list loaned books:
 
     ./utils/adept_loan_mgt [-l]
 
-To return a loaned book :
+To return a loaned book:
 
     ./utils/adept_loan_mgt -r <id>
 
